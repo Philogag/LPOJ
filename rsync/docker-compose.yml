@@ -1,0 +1,43 @@
+version: "3"
+services:
+  rsync-server:
+    image: axiom/rsync-server
+    container_name: rsync-server
+    environment:
+      USERNAME: "lpojdata"
+      PASSWORD: "pass"
+      # ALLOW: "172.16.0.0/12 127.0.0.1/32"
+    ports:
+      - 873:873
+    volumes:
+      - ./Backend/ProblemData:/data
+    restart: always
+    tty: true
+
+  # client at the same docker-compose file with server
+  rsync-clinet:
+    build: ./client
+    container_name: rsync-client
+    links:
+      - rsync-server
+    environment:
+      TIMES_PER_SECONDS: 60 # 拉取间隔（s）
+      USERNAME: "lpojdata"
+      PASSWORD: "pass"
+      SERVER: "rsync-server"
+      PORT: 873
+    volumes:
+      - ./Judge/ProblemData:/data
+    restart: always
+    tty: true
+  # a server just circularly copy file locally
+  # rsync-localcopy:
+  #   build: ./localcopy
+  #   container_name: rsync-localcopy
+  #   environment:
+  #     TIMES_PER_SECONDS: 60 # 拉取间隔（s）
+  #   volumes:
+  #     - ./Backend/ProblemData:/FROM_PATH
+  #     - ./Judge/ProblemData:/TO_PATH
+  #   restart: always
+  #   tty: true
